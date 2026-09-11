@@ -1,0 +1,3289 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>ছুটি হিসাব ক্যালকুলেটর</title>
+
+<!-- Excel -->
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+<!-- PDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<style>
+
+*{
+    box-sizing:border-box;
+}
+
+body{
+    margin:0;
+    background:#eef2f5;
+    color:#222;
+    font-family:"Noto Sans Bengali","Segoe UI",Arial,sans-serif;
+}
+
+.container{
+    max-width:1600px;
+    margin:25px auto;
+    padding:0 15px;
+}
+
+.app{
+    background:#fff;
+    border-radius:16px;
+    overflow:hidden;
+    box-shadow:0 8px 30px rgba(0,0,0,.10);
+}
+
+.header{
+    background:#176b4d;
+    color:#fff;
+    text-align:center;
+    padding:25px 15px;
+}
+
+.header h1{
+    margin:0;
+    font-size:28px;
+}
+
+.header p{
+    margin:8px 0 0;
+    font-size:14px;
+}
+
+.content{
+    padding:24px;
+}
+
+.section{
+    border:1px solid #dce4df;
+    border-radius:12px;
+    padding:20px;
+    margin-bottom:20px;
+}
+
+.section-title{
+    color:#176b4d;
+    font-size:18px;
+    font-weight:700;
+    margin-bottom:17px;
+}
+
+.form-grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:15px;
+}
+
+.field label{
+    display:block;
+    font-size:14px;
+    font-weight:600;
+    margin-bottom:6px;
+}
+
+input,
+select{
+    width:100%;
+    height:44px;
+    border:1px solid #cbd5d0;
+    border-radius:8px;
+    padding:0 11px;
+    font-size:14px;
+    background:#fff;
+}
+
+input:focus,
+select:focus{
+    outline:none;
+    border-color:#176b4d;
+    box-shadow:0 0 0 3px rgba(23,107,77,.10);
+}
+
+.button-row{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    margin-top:15px;
+}
+
+.btn{
+    border:0;
+    border-radius:7px;
+    padding:9px 14px;
+    font-size:13px;
+    font-weight:600;
+    cursor:pointer;
+    transition:.2s;
+    white-space:nowrap;
+}
+
+.btn:hover{
+    opacity:.88;
+    transform:translateY(-1px);
+}
+
+.btn-primary{
+    background:#176b4d;
+    color:#fff;
+}
+
+.btn-green{
+    background:#218b57;
+    color:#fff;
+}
+
+.btn-blue{
+    background:#1769aa;
+    color:#fff;
+}
+
+.btn-red{
+    background:#d64343;
+    color:#fff;
+}
+
+.btn-purple{
+    background:#6842a5;
+    color:#fff;
+}
+
+.btn-orange{
+    background:#c66a16;
+    color:#fff;
+}
+
+.btn-gray{
+    background:#687078;
+    color:#fff;
+}
+
+.info-box{
+    background:#f2f8f4;
+    border-left:4px solid #176b4d;
+    padding:13px 15px;
+    border-radius:6px;
+    margin-top:15px;
+    font-size:13px;
+    line-height:1.9;
+}
+
+.error-box{
+    display:none;
+    background:#fff0f0;
+    border-left:4px solid #d64343;
+    color:#a52222;
+    padding:12px 15px;
+    border-radius:6px;
+    margin-top:15px;
+    font-size:13px;
+}
+
+.edit-mode{
+    display:none;
+    margin-top:15px;
+    padding:12px 15px;
+    background:#eef6ff;
+    border-left:4px solid #1769aa;
+    border-radius:6px;
+    color:#174e78;
+    font-size:13px;
+}
+
+.report-title{
+    text-align:center;
+    margin-bottom:20px;
+}
+
+.report-title h2{
+    margin:0 0 10px;
+    font-size:24px;
+}
+
+.employee-info{
+    display:flex;
+    justify-content:center;
+    gap:28px;
+    flex-wrap:wrap;
+    color:#555;
+    font-size:14px;
+}
+
+.table-wrap{
+    width:100%;
+    overflow-x:auto;
+    border:1px solid #d8dfdc;
+    border-radius:9px;
+}
+
+table{
+    width:100%;
+    min-width:2050px;
+    border-collapse:collapse;
+}
+
+th,
+td{
+    border:1px solid #d8dfdc;
+    padding:9px 8px;
+    text-align:center;
+    font-size:13px;
+    vertical-align:middle;
+}
+
+thead tr:first-child th{
+    background:#176b4d;
+    color:#fff;
+    font-size:14px;
+}
+
+thead tr:nth-child(2) th{
+    background:#e9f3ed;
+    color:#174b37;
+}
+
+tbody tr:nth-child(even){
+    background:#f8faf9;
+}
+
+.date-cell{
+    white-space:nowrap;
+}
+
+.balance{
+    font-weight:700;
+}
+
+.positive{
+    color:#176b4d;
+}
+
+.negative{
+    color:#c62828;
+}
+
+.empty{
+    padding:30px;
+    color:#777;
+}
+
+.table-actions{
+    display:flex;
+    justify-content:center;
+    gap:5px;
+    flex-wrap:wrap;
+}
+
+.table-actions .btn{
+    font-size:12px;
+    padding:7px 9px;
+}
+
+.summary-grid{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:12px;
+}
+
+.summary-card{
+    background:#f5faf7;
+    border:1px solid #dce8e1;
+    border-radius:10px;
+    padding:15px;
+    text-align:center;
+}
+
+.summary-title{
+    font-size:12px;
+    color:#666;
+}
+
+.summary-value{
+    font-size:25px;
+    font-weight:700;
+    color:#176b4d;
+    margin-top:5px;
+}
+
+.summary-unit{
+    font-size:11px;
+    color:#777;
+}
+
+.action-grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:10px;
+}
+
+.pdf-loading{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.65);
+    z-index:9999;
+    align-items:center;
+    justify-content:center;
+}
+
+.loading-box{
+    background:#fff;
+    border-radius:12px;
+    padding:25px 35px;
+    text-align:center;
+}
+
+.spinner{
+    width:42px;
+    height:42px;
+    border:4px solid #ddd;
+    border-top-color:#176b4d;
+    border-radius:50%;
+    animation:spin 1s linear infinite;
+    margin:0 auto 15px;
+}
+
+@keyframes spin{
+    to{
+        transform:rotate(360deg);
+    }
+}
+
+.footer{
+    text-align:center;
+    padding:15px;
+    font-size:12px;
+    color:#777;
+}
+
+@media(max-width:900px){
+
+    .form-grid{
+        grid-template-columns:1fr;
+    }
+
+    .summary-grid{
+        grid-template-columns:1fr 1fr;
+    }
+
+    .action-grid{
+        grid-template-columns:1fr;
+    }
+
+}
+
+@media(max-width:550px){
+
+    .container{
+        margin:0;
+        padding:0;
+    }
+
+    .app{
+        border-radius:0;
+    }
+
+    .content{
+        padding:14px;
+    }
+
+    .section{
+        padding:15px;
+    }
+
+    .summary-grid{
+        grid-template-columns:1fr;
+    }
+
+    .header h1{
+        font-size:22px;
+    }
+
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="app">
+
+<div class="header">
+
+<h1>📋 ছুটি হিসাব ক্যালকুলেটর</h1>
+<p>Developed by: Helal Ahmed</P>
+<p>
+কর্মকাল • অর্জিত ছুটি • জমা ছুটি • ভোগকৃত ছুটি • অবশিষ্ট ছুটি
+</p>
+
+</div>
+
+<div class="content">
+
+
+<!-- =====================================================
+     EMPLOYEE
+===================================================== -->
+
+<div class="section">
+
+<div class="section-title">
+👤 কর্মকর্তা / কর্মচারীর তথ্য
+</div>
+
+<div class="form-grid">
+
+<div class="field">
+
+<label>কর্মকর্তা/কর্মচারীর নাম</label>
+
+<input
+type="text"
+id="employeeName"
+placeholder="নাম লিখুন">
+
+</div>
+
+<div class="field">
+
+<label>পদবি</label>
+
+<input
+type="text"
+id="designation"
+placeholder="পদবি লিখুন">
+
+</div>
+
+<div class="field">
+
+<label>চাকরিতে ১ম যোগদানের তারিখ</label>
+
+<input
+type="date"
+id="joiningDate">
+
+</div>
+
+</div>
+
+<div hidden class="info-box">
+
+<b>ছুটি অর্জনের নিয়ম</b><br>
+
+১। প্রতি ১১ দিনে ১ দিন পূর্ণ গড় বেতনে ছুটি অর্জিত হবে।<br>
+
+২। প্রতি ১২ দিনে ১ দিন অর্ধ গড় বেতনে ছুটি অর্জিত হবে।<br>
+
+৩। অর্জিত ছুটির হিসাবের ক্ষেত্রে স্বাভাবিক Round ব্যবহার করা হবে।<br>
+
+৪। ১১ দিনের কম কর্মকাল হলে Full এবং Half উভয়ের জন্য Carry Forward হবে।<br>
+
+৫। ঠিক ১১ দিন কর্মকাল হলে Full-এ ১ দিন অর্জিত হবে এবং Half-এর জন্য ১১ দিন Carry Forward হবে।<br>
+
+৬। ১২ দিন বা তার বেশি কর্মকাল হলে নতুন Carry Forward হবে না।<br>
+
+৭। অসাধারণ ছুটির সময় কর্মকাল হিসেবে গণনা হবে না এবং Balance কমবে না।<br>
+
+৮। ছুটির শুরু ও শেষ—উভয় তারিখ Inclusive হিসেবে গণনা হবে।
+
+</div>
+
+</div>
+
+
+<!-- =====================================================
+     LEAVE INPUT
+===================================================== -->
+
+<div class="section">
+
+<div class="section-title">
+➕ ভোগকৃত ছুটি যোগ করুন
+</div>
+
+<div class="form-grid">
+
+<div class="field">
+
+<label>ছুটির ধরন</label>
+
+<select id="leaveType">
+
+<option value="পূর্ণ গড় বেতন">
+পূর্ণ গড় বেতন
+</option>
+
+<option value="অর্ধ গড় বেতন">
+অর্ধ গড় বেতন
+</option>
+
+<option value="অসাধারণ">
+অসাধারণ
+</option>
+
+</select>
+
+</div>
+
+<div class="field">
+
+<label>ছুটি শুরুর তারিখ</label>
+
+<input
+type="date"
+id="leaveStart">
+
+</div>
+
+<div class="field">
+
+<label>ছুটি শেষের তারিখ</label>
+
+<input
+type="date"
+id="leaveEnd">
+
+</div>
+
+</div>
+
+<div id="errorBox" class="error-box"></div>
+
+<div id="editMode" class="edit-mode">
+
+✏️ বর্তমানে একটি ছুটির রেকর্ড সংশোধন করা হচ্ছে।
+
+</div>
+
+<div class="button-row">
+
+<button
+class="btn btn-primary"
+id="addLeave">
+
+＋ ছুটি যোগ করুন
+
+</button>
+
+<button
+class="btn btn-gray"
+id="cancelEdit"
+style="display:none">
+
+✖ সংশোধন বাতিল
+
+</button>
+
+</div>
+
+<div class="info-box">
+
+একটি ছুটি যোগ করার পর পরবর্তী কর্মপর্বের শুরুর তারিখ
+আগের ছুটি শেষ হওয়ার পরের দিন স্বয়ংক্রিয়ভাবে নির্ধারিত হবে।
+
+</div>
+
+</div>
+
+
+<!-- =====================================================
+     REPORT
+===================================================== -->
+
+<div class="section" id="pdfReport">
+
+<div class="report-title">
+
+<h2>ছুটি হিসাব বিবরণী</h2>
+
+<div class="employee-info">
+
+<span>
+<b>নাম:</b>
+<span id="reportName">—</span>
+</span>
+
+<span>
+<b>পদবি:</b>
+<span id="reportDesignation">—</span>
+</span>
+
+<span>
+<b>১ম যোগদানের তারিখ:</b>
+<span id="reportJoining">—</span>
+</span>
+
+</div>
+
+</div>
+
+<div class="table-wrap">
+
+<table id="reportTable">
+
+<thead>
+
+<tr>
+
+<th colspan="3">
+কর্মকাল
+</th>
+
+<th colspan="2">
+অর্জিত ছুটি
+</th>
+
+<th colspan="2">
+জমা ছুটি
+</th>
+
+<th colspan="4">
+ভোগকৃত ছুটি
+</th>
+
+<th colspan="2">
+অবশিষ্ট ছুটি
+</th>
+
+<th rowspan="2" class="delete-col">
+ব্যবস্থা
+</th>
+
+</tr>
+
+<tr>
+
+<th>শুরুর তারিখ</th>
+
+<th>শেষের তারিখ</th>
+
+<th>মোট কর্মকাল</th>
+
+<th>পূর্ণ গড় বেতনে</th>
+<th>অর্ধগড় বেতনে</th>
+
+<th>পূর্ণ গড় বেতনে জমা ছুটি</th>
+<th>অর্ধগড় বেতনে জমা ছুটি</th>
+
+<th>ছুটির ধরণ</th>
+<th>শুরুর তারিখ</th>
+<th>শেষ তারিখ</th>
+<th>মোট ভোগকৃত ছুটি</th>
+
+<th>পূর্ণ গড় বেতনে</th>
+<th>অর্ধগড় বেতনে</th>
+
+</tr>
+
+</thead>
+
+<tbody id="ledgerBody">
+
+<tr>
+
+<td colspan="14" class="empty">
+
+এখনো কোনো ছুটির তথ্য যোগ করা হয়নি।
+
+</td>
+
+</tr>
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+
+<!-- =====================================================
+     SUMMARY
+===================================================== -->
+
+<div class="section">
+
+<div class="section-title">
+📊 বর্তমান সারসংক্ষেপ
+</div>
+
+<div class="summary-grid">
+
+<div class="summary-card">
+
+<div class="summary-title">
+মোট পূর্ণ গড় বেতনে অর্জিত
+</div>
+
+<div class="summary-value" id="totalFullEarned">
+0
+</div>
+
+<div class="summary-unit">দিন</div>
+
+</div>
+
+<div class="summary-card">
+
+<div class="summary-title">
+মোট অর্ধ গড় বেতনে অর্জিত
+</div>
+
+<div class="summary-value" id="totalHalfEarned">
+0
+</div>
+
+<div class="summary-unit">দিন</div>
+
+</div>
+
+<div class="summary-card">
+
+<div class="summary-title">
+মোট পূর্ণ গড় বেতনে ভোগ
+</div>
+
+<div class="summary-value" id="totalFullUsed">
+0
+</div>
+
+<div class="summary-unit">দিন</div>
+
+</div>
+
+<div class="summary-card">
+
+<div class="summary-title">
+মোট অর্ধ গড় বেতনে ভোগ
+</div>
+
+<div class="summary-value" id="totalHalfUsed">
+0
+</div>
+
+<div class="summary-unit">দিন</div>
+
+</div>
+
+</div>
+
+</div>
+
+
+<!-- =====================================================
+     ACTIONS
+===================================================== -->
+
+<div class="section">
+
+<div class="action-grid">
+
+<button
+class="btn btn-orange"
+id="saveHtmlBtn">
+
+💾 পেজটি সেভ করুন
+
+</button>
+
+<button
+class="btn btn-green"
+id="excelBtn">
+
+📊 Excel Download
+
+</button>
+
+<button
+class="btn btn-purple"
+id="pdfBtn">
+
+📄 PDF Download
+
+</button>
+
+</div>
+
+</div>
+
+<div class="footer">
+ছুটি হিসাব ক্যালকুলেটর by Helal Ahmed
+</div>
+
+</div>
+</div>
+</div>
+
+
+<!-- PDF LOADING -->
+
+<div class="pdf-loading" id="pdfLoading">
+
+<div class="loading-box">
+
+<div class="spinner"></div>
+
+<b>PDF তৈরি হচ্ছে...</b>
+
+<div style="margin-top:7px;font-size:12px;color:#666">
+অনুগ্রহ করে অপেক্ষা করুন
+</div>
+
+</div>
+
+</div>
+
+
+<!-- =====================================================
+     SAVED DATA
+
+     Save করা HTML-এ এই ব্লকের ভিতরে
+     বর্তমান তথ্য রাখা হবে।
+
+     এটি visible text নয়।
+===================================================== -->
+
+<script id="savedApplicationData"
+        type="application/json">
+{}
+</script>
+
+
+<script>
+
+/* =====================================================
+   DATA
+===================================================== */
+
+let leaveRecords = [];
+
+let editingIndex = -1;
+
+let fullCarry = 0;
+
+let halfCarry = 0;
+
+
+/* =====================================================
+   ELEMENTS
+===================================================== */
+
+const employeeName =
+document.getElementById("employeeName");
+
+const designation =
+document.getElementById("designation");
+
+const joiningDate =
+document.getElementById("joiningDate");
+
+const leaveType =
+document.getElementById("leaveType");
+
+const leaveStart =
+document.getElementById("leaveStart");
+
+const leaveEnd =
+document.getElementById("leaveEnd");
+
+const ledgerBody =
+document.getElementById("ledgerBody");
+
+const errorBox =
+document.getElementById("errorBox");
+
+const editMode =
+document.getElementById("editMode");
+
+const addLeaveButton =
+document.getElementById("addLeave");
+
+const cancelEditButton =
+document.getElementById("cancelEdit");
+
+
+/* =====================================================
+   DATE
+===================================================== */
+
+function parseDate(value){
+
+    const p =
+    value.split("-").map(Number);
+
+    return new Date(
+        p[0],
+        p[1]-1,
+        p[2]
+    );
+
+}
+
+
+function dateToISO(date){
+
+    return (
+        date.getFullYear()
+        +
+        "-"
+        +
+        String(
+            date.getMonth()+1
+        ).padStart(2,"0")
+        +
+        "-"
+        +
+        String(
+            date.getDate()
+        ).padStart(2,"0")
+    );
+
+}
+
+
+function addDays(value,days){
+
+    const d =
+    parseDate(value);
+
+    d.setDate(
+        d.getDate()+days
+    );
+
+    return dateToISO(d);
+
+}
+
+
+function inclusiveDays(start,end){
+
+    const s =
+    parseDate(start);
+
+    const e =
+    parseDate(end);
+
+    return Math.floor(
+        (e-s) /
+        (1000*60*60*24)
+    ) + 1;
+
+}
+
+
+function durationYMD(totalDays){
+
+    /*
+       সময়কাল হিসাবের নির্ধারিত নিয়ম:
+       ১ বছর = ৩৬৫ দিন
+       ১ মাস = ৩০ দিন
+    */
+
+    totalDays =
+    Math.max(
+        0,
+        Number(totalDays) || 0
+    );
+
+    const years =
+    Math.floor(
+        totalDays / 365
+    );
+
+    let remainingDays =
+    totalDays % 365;
+
+    const months =
+    Math.floor(
+        remainingDays / 30
+    );
+
+    const days =
+    remainingDays % 30;
+
+    return {
+        years:years,
+        months:months,
+        days:days
+    };
+
+}
+
+function formatDaysWithDuration(
+    totalDays
+){
+
+    const duration =
+    durationYMD(totalDays);
+
+    return (
+        "<b>"
+        +
+        totalDays
+        +
+        "</b> দিন<br>"
+        +
+        "<span style=\"font-size:11px;white-space:nowrap\">("
+        +
+        duration.years
+        +
+        " বছর "
+        +
+        duration.months
+        +
+        " মাস "
+        +
+        duration.days
+        +
+        " দিন)</span>"
+    );
+
+}
+
+function formatDate(value){
+
+    if(!value){
+        return "—";
+    }
+
+    const d =
+    parseDate(value);
+
+    return (
+        String(
+            d.getDate()
+        ).padStart(2,"0")
+        +
+        "/"
+        +
+        String(
+            d.getMonth()+1
+        ).padStart(2,"0")
+        +
+        "/"
+        +
+        d.getFullYear()
+    );
+
+}
+
+
+/* =====================================================
+   ERROR
+===================================================== */
+
+function showError(message){
+
+    errorBox.textContent =
+    message;
+
+    errorBox.style.display =
+    "block";
+
+}
+
+
+function hideError(){
+
+    errorBox.textContent =
+    "";
+
+    errorBox.style.display =
+    "none";
+
+}
+
+
+/* =====================================================
+   EMPLOYEE INFO
+===================================================== */
+
+function updateEmployeeInfo(){
+
+    document.getElementById(
+        "reportName"
+    ).textContent =
+    employeeName.value.trim() || "—";
+
+
+    document.getElementById(
+        "reportDesignation"
+    ).textContent =
+    designation.value.trim() || "—";
+
+
+    document.getElementById(
+        "reportJoining"
+    ).textContent =
+    formatDate(
+        joiningDate.value
+    );
+
+}
+
+
+employeeName.addEventListener(
+    "input",
+    updateEmployeeInfo
+);
+
+designation.addEventListener(
+    "input",
+    updateEmployeeInfo
+);
+
+joiningDate.addEventListener(
+    "change",
+    function(){
+
+        updateEmployeeInfo();
+
+        buildLedger();
+
+    }
+);
+
+
+/* =====================================================
+   SORT
+===================================================== */
+
+function sortRecords(){
+
+    leaveRecords.sort(
+        function(a,b){
+
+            return (
+                parseDate(a.start)
+                -
+                parseDate(b.start)
+            );
+
+        }
+    );
+
+}
+
+
+/* =====================================================
+   OVERLAP
+===================================================== */
+
+function hasOverlap(
+    start,
+    end,
+    ignoreIndex=-1
+){
+
+    const s =
+    parseDate(start);
+
+    const e =
+    parseDate(end);
+
+    for(
+        let i=0;
+        i<leaveRecords.length;
+        i++
+    ){
+
+        if(i===ignoreIndex){
+            continue;
+        }
+
+        const oldS =
+        parseDate(
+            leaveRecords[i].start
+        );
+
+        const oldE =
+        parseDate(
+            leaveRecords[i].end
+        );
+
+        if(
+            s<=oldE &&
+            e>=oldS
+        ){
+
+            return true;
+
+        }
+
+    }
+
+    return false;
+
+}
+
+
+/* =====================================================
+   NEXT START
+===================================================== */
+
+function getNextStart(){
+
+    if(
+        leaveRecords.length===0
+    ){
+
+        return joiningDate.value;
+
+    }
+
+    sortRecords();
+
+    return addDays(
+        leaveRecords[
+            leaveRecords.length-1
+        ].end,
+        1
+    );
+
+}
+
+
+/* =====================================================
+   FULL CALCULATION
+===================================================== */
+
+function calculateFull(
+    currentDays,
+    previousCarry
+){
+
+    const total =
+    previousCarry +
+    currentDays;
+
+    let earned = 0;
+
+    if(total >= 11){
+
+        earned =
+        Math.round(
+            total / 11
+        );
+
+    }
+
+    let carry = 0;
+
+    /*
+       ১১ দিনের কম হলে Carry
+    */
+
+    if(currentDays < 11){
+
+        carry =
+        total -
+        (earned * 11);
+
+        if(carry < 0){
+            carry = 0;
+        }
+
+    }
+
+    return {
+        earned:earned,
+        carry:carry
+    };
+
+}
+
+
+/* =====================================================
+   HALF CALCULATION
+===================================================== */
+
+function calculateHalf(
+    currentDays,
+    previousCarry
+){
+
+    const total =
+    previousCarry +
+    currentDays;
+
+    let earned = 0;
+
+    if(total >= 12){
+
+        earned =
+        Math.round(
+            total / 12
+        );
+
+    }
+
+    let carry = 0;
+
+    /*
+       ১১ দিন বা তার কম হলে Carry
+    */
+
+    if(currentDays <= 11){
+
+        carry =
+        total -
+        (earned * 12);
+
+        if(carry < 0){
+            carry = 0;
+        }
+
+    }
+
+    return {
+        earned:earned,
+        carry:carry
+    };
+
+}
+
+
+/* =====================================================
+   BUILD LEDGER
+===================================================== */
+
+function buildLedger(){
+
+    fullCarry = 0;
+
+    halfCarry = 0;
+
+    if(
+        !joiningDate.value ||
+        leaveRecords.length===0
+    ){
+
+        ledgerBody.innerHTML = `
+
+        <tr>
+
+        <td colspan="14" class="empty">
+
+        এখনো কোনো ছুটির তথ্য যোগ করা হয়নি।
+
+        </td>
+
+        </tr>
+
+        `;
+
+        updateSummary(0,0,0,0);
+
+        return;
+
+    }
+
+
+    sortRecords();
+
+
+    let currentStart =
+    joiningDate.value;
+
+
+    let previousFullBalance = 0;
+
+    let previousHalfBalance = 0;
+
+
+    let totalFullEarned = 0;
+
+    let totalHalfEarned = 0;
+
+    let totalFullUsed = 0;
+
+    let totalHalfUsed = 0;
+
+
+    let html = "";
+
+
+    leaveRecords.forEach(
+    function(record,index){
+
+        const workEnd =
+        addDays(
+            record.start,
+            -1
+        );
+
+
+        let workDays = 0;
+
+
+        if(
+            parseDate(workEnd)
+            >=
+            parseDate(currentStart)
+        ){
+
+            workDays =
+            inclusiveDays(
+                currentStart,
+                workEnd
+            );
+
+        }
+
+
+        const fullResult =
+        calculateFull(
+            workDays,
+            fullCarry
+        );
+
+
+        const halfResult =
+        calculateHalf(
+            workDays,
+            halfCarry
+        );
+
+
+        fullCarry =
+        fullResult.carry;
+
+        halfCarry =
+        halfResult.carry;
+
+
+        const earnedFull =
+        fullResult.earned;
+
+        const earnedHalf =
+        halfResult.earned;
+
+
+        const depositedFull =
+        previousFullBalance +
+        earnedFull;
+
+
+        const depositedHalf =
+        previousHalfBalance +
+        earnedHalf;
+
+
+        let usedFull = 0;
+
+        let usedHalf = 0;
+
+
+        if(
+            record.type ===
+            "পূর্ণ গড় বেতন"
+        ){
+
+            usedFull =
+            record.days;
+
+        }
+
+
+        if(
+            record.type ===
+            "অর্ধ গড় বেতন"
+        ){
+
+            usedHalf =
+            record.days;
+
+        }
+
+
+        /*
+           অসাধারণ ছুটি Balance কমাবে না।
+        */
+
+
+        const remainingFull =
+        depositedFull -
+        usedFull;
+
+
+        const remainingHalf =
+        depositedHalf -
+        usedHalf;
+
+
+        totalFullEarned +=
+        earnedFull;
+
+        totalHalfEarned +=
+        earnedHalf;
+
+        totalFullUsed +=
+        usedFull;
+
+        totalHalfUsed +=
+        usedHalf;
+
+
+        html += `
+
+        <tr>
+
+        <td class="date-cell">
+        ${formatDate(currentStart)}
+        </td>
+
+        <td class="date-cell">
+        ${formatDate(workEnd)}
+        </td>
+
+        <td>
+        ${formatDaysWithDuration(
+            workDays
+        )}
+        </td>
+
+        <td>
+        ${formatDaysWithDuration(
+            earnedFull
+        )}
+        </td>
+
+        <td>
+        ${formatDaysWithDuration(
+            earnedHalf
+        )}
+        </td>
+
+        <td>
+        ${formatDaysWithDuration(
+            depositedFull
+        )}
+        </td>
+
+        <td>
+        ${formatDaysWithDuration(
+            depositedHalf
+        )}
+        </td>
+
+        <td>
+        ${record.type}
+        </td>
+
+        <td class="date-cell">
+        ${formatDate(record.start)}
+        </td>
+
+        <td class="date-cell">
+        ${formatDate(record.end)}
+        </td>
+
+        <td>
+        ${formatDaysWithDuration(
+            record.days
+        )}
+        </td>
+
+        <td class="
+        balance
+        ${remainingFull < 0
+            ? "negative"
+            : "positive"}">
+
+        ${formatDaysWithDuration(
+            remainingFull
+        )}
+
+        </td>
+
+        <td class="
+        balance
+        ${remainingHalf < 0
+            ? "negative"
+            : "positive"}">
+
+        ${formatDaysWithDuration(
+            remainingHalf
+        )}
+
+        </td>
+
+        <td class="delete-col">
+
+        <div class="table-actions">
+
+        <button
+        class="btn btn-blue"
+        onclick="editRecord(${index})">
+
+        ✏️ সংশোধন
+
+        </button>
+
+        <button
+        class="btn btn-red"
+        onclick="deleteRecord(${index})">
+
+        🗑️ মুছুন
+
+        </button>
+
+        </div>
+
+        </td>
+
+        </tr>
+
+        `;
+
+
+        previousFullBalance =
+        remainingFull;
+
+        previousHalfBalance =
+        remainingHalf;
+
+
+        currentStart =
+        addDays(
+            record.end,
+            1
+        );
+
+    });
+
+
+    ledgerBody.innerHTML =
+    html;
+
+
+    updateSummary(
+        totalFullEarned,
+        totalHalfEarned,
+        totalFullUsed,
+        totalHalfUsed
+    );
+
+}
+
+
+/* =====================================================
+   SUMMARY
+===================================================== */
+
+function updateSummary(
+    fullEarned,
+    halfEarned,
+    fullUsed,
+    halfUsed
+){
+
+    document.getElementById(
+        "totalFullEarned"
+    ).textContent =
+    fullEarned;
+
+    document.getElementById(
+        "totalHalfEarned"
+    ).textContent =
+    halfEarned;
+
+    document.getElementById(
+        "totalFullUsed"
+    ).textContent =
+    fullUsed;
+
+    document.getElementById(
+        "totalHalfUsed"
+    ).textContent =
+    halfUsed;
+
+}
+
+
+/* =====================================================
+   CANCEL EDIT
+===================================================== */
+
+function cancelEdit(){
+
+    editingIndex = -1;
+
+    leaveStart.value = "";
+
+    leaveEnd.value = "";
+
+    leaveType.value =
+    "পূর্ণ গড় বেতন";
+
+    addLeaveButton.textContent =
+    "＋ ছুটি যোগ করুন";
+
+    addLeaveButton.classList.remove(
+        "btn-blue"
+    );
+
+    addLeaveButton.classList.add(
+        "btn-primary"
+    );
+
+    cancelEditButton.style.display =
+    "none";
+
+    editMode.style.display =
+    "none";
+
+    hideError();
+
+}
+
+
+cancelEditButton.addEventListener(
+    "click",
+    cancelEdit
+);
+
+
+/* =====================================================
+   ADD / EDIT LEAVE
+===================================================== */
+
+addLeaveButton.addEventListener(
+"click",
+function(){
+
+    hideError();
+
+
+    if(
+        !employeeName.value.trim()
+    ){
+
+        showError(
+            "প্রথমে কর্মকর্তা/কর্মচারীর নাম লিখুন।"
+        );
+
+        employeeName.focus();
+
+        return;
+
+    }
+
+
+    if(
+        !designation.value.trim()
+    ){
+
+        showError(
+            "প্রথমে পদবি লিখুন।"
+        );
+
+        designation.focus();
+
+        return;
+
+    }
+
+
+    if(
+        !joiningDate.value
+    ){
+
+        showError(
+            "প্রথমে চাকরিতে ১ম যোগদানের তারিখ নির্বাচন করুন।"
+        );
+
+        joiningDate.focus();
+
+        return;
+
+    }
+
+
+    if(
+        !leaveStart.value ||
+        !leaveEnd.value
+    ){
+
+        showError(
+            "ছুটির শুরু ও শেষের তারিখ নির্বাচন করুন।"
+        );
+
+        return;
+
+    }
+
+
+    if(
+        parseDate(leaveEnd.value)
+        <
+        parseDate(leaveStart.value)
+    ){
+
+        showError(
+            "ছুটির শেষের তারিখ শুরুর তারিখের আগে হতে পারে না।"
+        );
+
+        return;
+
+    }
+
+
+    if(
+        parseDate(leaveStart.value)
+        <
+        parseDate(joiningDate.value)
+    ){
+
+        showError(
+            "ছুটির তারিখ চাকরিতে যোগদানের তারিখের আগে হতে পারে না।"
+        );
+
+        return;
+
+    }
+
+
+    if(
+        hasOverlap(
+            leaveStart.value,
+            leaveEnd.value,
+            editingIndex
+        )
+    ){
+
+        showError(
+            "এই ছুটির সময় অন্য একটি ছুটির সময়ের সঙ্গে সংঘর্ষ করছে।"
+        );
+
+        return;
+
+    }
+
+
+    /* EDIT */
+
+    if(editingIndex >= 0){
+
+        leaveRecords[
+            editingIndex
+        ] = {
+
+            type:
+            leaveType.value,
+
+            start:
+            leaveStart.value,
+
+            end:
+            leaveEnd.value,
+
+            days:
+            inclusiveDays(
+                leaveStart.value,
+                leaveEnd.value
+            )
+
+        };
+
+
+        cancelEdit();
+
+        buildLedger();
+
+        return;
+
+    }
+
+
+    /* NEW */
+
+    const expectedStart =
+    getNextStart();
+
+
+    if(
+        parseDate(leaveStart.value)
+        <
+        parseDate(expectedStart)
+    ){
+
+        showError(
+
+            "এই ছুটির শুরুর তারিখ সঠিক নয়। "
+            +
+            "শুরুর তারিখ "
+            +
+            formatDate(expectedStart)
+            +
+            " অথবা তার পরে হতে হবে।"
+
+        );
+
+        return;
+
+    }
+
+
+    leaveRecords.push({
+
+        type:
+        leaveType.value,
+
+        start:
+        leaveStart.value,
+
+        end:
+        leaveEnd.value,
+
+        days:
+        inclusiveDays(
+            leaveStart.value,
+            leaveEnd.value
+        )
+
+    });
+
+
+    sortRecords();
+
+    buildLedger();
+
+
+    leaveStart.value =
+    addDays(
+        leaveEnd.value,
+        1
+    );
+
+    leaveEnd.value = "";
+
+});
+
+
+/* =====================================================
+   EDIT
+===================================================== */
+
+function editRecord(index){
+
+    const record =
+    leaveRecords[index];
+
+    if(!record){
+        return;
+    }
+
+
+    editingIndex =
+    index;
+
+
+    leaveType.value =
+    record.type;
+
+    leaveStart.value =
+    record.start;
+
+    leaveEnd.value =
+    record.end;
+
+
+    addLeaveButton.textContent =
+    "💾 সংশোধন সংরক্ষণ";
+
+
+    addLeaveButton.classList.remove(
+        "btn-primary"
+    );
+
+    addLeaveButton.classList.add(
+        "btn-blue"
+    );
+
+
+    cancelEditButton.style.display =
+    "inline-block";
+
+    editMode.style.display =
+    "block";
+
+
+    document.getElementById(
+        "leaveType"
+    ).scrollIntoView({
+
+        behavior:"smooth",
+        block:"center"
+
+    });
+
+}
+
+
+/* =====================================================
+   DELETE
+===================================================== */
+
+function deleteRecord(index){
+
+    const record =
+    leaveRecords[index];
+
+    if(!record){
+        return;
+    }
+
+
+    const ok =
+    confirm(
+
+        "আপনি কি এই ছুটির রেকর্ডটি মুছে ফেলতে চান?\n\n"
+        +
+        "ছুটির ধরন: "
+        +
+        record.type
+        +
+        "\n"
+        +
+        "তারিখ: "
+        +
+        formatDate(record.start)
+        +
+        " - "
+        +
+        formatDate(record.end)
+
+    );
+
+
+    if(!ok){
+        return;
+    }
+
+
+    leaveRecords.splice(
+        index,
+        1
+    );
+
+
+    cancelEdit();
+
+    buildLedger();
+
+}
+
+
+/* =====================================================
+   EXCEL
+===================================================== */
+
+document.getElementById(
+    "excelBtn"
+).addEventListener(
+"click",
+function(){
+
+    if(
+        typeof XLSX ===
+        "undefined"
+    ){
+
+        alert(
+            "Excel Library পাওয়া যাচ্ছে না।"
+        );
+
+        return;
+
+    }
+
+
+    if(
+        leaveRecords.length===0
+    ){
+
+        alert(
+            "Excel তৈরি করার জন্য অন্তত একটি ছুটির তথ্য যোগ করুন।"
+        );
+
+        return;
+
+    }
+
+
+    sortRecords();
+
+
+    let fCarry = 0;
+    let hCarry = 0;
+
+    let currentStart =
+    joiningDate.value;
+
+    let fullBalance = 0;
+    let halfBalance = 0;
+
+    let totalFullEarned = 0;
+    let totalHalfEarned = 0;
+    let totalFullUsed = 0;
+    let totalHalfUsed = 0;
+
+    const rows = [];
+
+
+    leaveRecords.forEach(
+    function(record){
+
+        const workEnd =
+        addDays(
+            record.start,
+            -1
+        );
+
+
+        let workDays = 0;
+
+
+        if(
+            parseDate(workEnd)
+            >=
+            parseDate(currentStart)
+        ){
+
+            workDays =
+            inclusiveDays(
+                currentStart,
+                workEnd
+            );
+
+        }
+
+
+        const full =
+        calculateFull(
+            workDays,
+            fCarry
+        );
+
+
+        const half =
+        calculateHalf(
+            workDays,
+            hCarry
+        );
+
+
+        fCarry =
+        full.carry;
+
+        hCarry =
+        half.carry;
+
+
+        const depositedFull =
+        fullBalance +
+        full.earned;
+
+
+        const depositedHalf =
+        halfBalance +
+        half.earned;
+
+
+        let usedFull = 0;
+        let usedHalf = 0;
+
+
+        if(
+            record.type ===
+            "পূর্ণ গড় বেতন"
+        ){
+
+            usedFull =
+            record.days;
+
+        }
+
+
+        if(
+            record.type ===
+            "অর্ধ গড় বেতন"
+        ){
+
+            usedHalf =
+            record.days;
+
+        }
+
+
+        const remainingFull =
+        depositedFull -
+        usedFull;
+
+
+        const remainingHalf =
+        depositedHalf -
+        usedHalf;
+
+
+        totalFullEarned +=
+        full.earned;
+
+        totalHalfEarned +=
+        half.earned;
+
+        totalFullUsed +=
+        usedFull;
+
+        totalHalfUsed +=
+        usedHalf;
+
+
+        rows.push([
+
+            formatDate(currentStart),
+
+            formatDate(workEnd),
+
+            workDays,
+
+            full.earned,
+
+            half.earned,
+
+            depositedFull,
+
+            depositedHalf,
+
+            record.type,
+
+            formatDate(record.start),
+
+            formatDate(record.end),
+
+            record.days,
+
+            remainingFull,
+
+            remainingHalf
+
+        ]);
+
+
+        fullBalance =
+        remainingFull;
+
+        halfBalance =
+        remainingHalf;
+
+
+        currentStart =
+        addDays(
+            record.end,
+            1
+        );
+
+    });
+
+
+    const wb =
+    XLSX.utils.book_new();
+
+
+    const summary = [
+
+        ["ছুটি হিসাব বিবরণী"],
+
+        [],
+
+        [
+            "কর্মকর্তা/কর্মচারীর নাম",
+            employeeName.value
+        ],
+
+        [
+            "পদবি",
+            designation.value
+        ],
+
+        [
+            "চাকরিতে ১ম যোগদানের তারিখ",
+            formatDate(
+                joiningDate.value
+            )
+        ],
+
+        [],
+
+        [
+            "বিবরণ",
+            "পূর্ণ গড়",
+            "অর্ধ গড়"
+        ],
+
+        [
+            "মোট অর্জিত ছুটি",
+            totalFullEarned,
+            totalHalfEarned
+        ],
+
+        [
+            "মোট ভোগকৃত ছুটি",
+            totalFullUsed,
+            totalHalfUsed
+        ],
+
+        [
+            "বর্তমান অবশিষ্ট ছুটি",
+            fullBalance,
+            halfBalance
+        ]
+
+    ];
+
+
+    const ws1 =
+    XLSX.utils.aoa_to_sheet(
+        summary
+    );
+
+
+    ws1["!cols"] = [
+        {wch:35},
+        {wch:20},
+        {wch:20}
+    ];
+
+
+    const data = [
+
+        [
+            "কর্মকাল",
+            "",
+            "",
+            "অর্জিত ছুটি",
+            "",
+            "জমা ছুটি",
+            "",
+            "ভোগকৃত ছুটি",
+            "",
+            "",
+            "",
+            "অবশিষ্ট ছুটি",
+            ""
+        ],
+
+        [
+            "শুরুর তারিখ",
+            "শেষের তারিখ",
+            "মোট কর্মকাল",
+
+            "পূর্ণ গড় বেতনে",
+            "অর্ধগড় বেতনে",
+
+            "পূর্ণ গড় বেতনে জমা ছুটি",
+            "অর্ধগড় বেতনে জমা ছুটি",
+
+            "ছুটির ধরণ",
+            "শুরুর তারিখ",
+            "শেষ তারিখ",
+            "মোট ভোগকৃত ছুটি",
+
+            "পূর্ণ গড় বেতনে",
+            "অর্ধগড় বেতনে"
+        ]
+
+    ];
+
+
+    rows.forEach(
+        function(row){
+            data.push(row);
+        }
+    );
+
+
+    const ws2 =
+    XLSX.utils.aoa_to_sheet(
+        data
+    );
+
+
+    ws2["!cols"] = [
+
+        {wch:18},
+        {wch:18},
+        {wch:15},
+
+        {wch:18},
+        {wch:18},
+
+        {wch:25},
+        {wch:25},
+
+        {wch:20},
+        {wch:18},
+        {wch:18},
+        {wch:20},
+
+        {wch:20},
+        {wch:20}
+
+    ];
+
+
+    ws2["!merges"] = [
+
+        {
+            s:{r:0,c:0},
+            e:{r:0,c:2}
+        },
+
+        {
+            s:{r:0,c:3},
+            e:{r:0,c:4}
+        },
+
+        {
+            s:{r:0,c:5},
+            e:{r:0,c:6}
+        },
+
+        {
+            s:{r:0,c:7},
+            e:{r:0,c:10}
+        },
+
+        {
+            s:{r:0,c:11},
+            e:{r:0,c:12}
+        }
+
+    ];
+
+
+    XLSX.utils.book_append_sheet(
+        wb,
+        ws1,
+        "সারসংক্ষেপ"
+    );
+
+
+    XLSX.utils.book_append_sheet(
+        wb,
+        ws2,
+        "ছুটির হিসাব"
+    );
+
+
+    let filename =
+    employeeName.value
+        .trim()
+        .replace(
+            /[\\/:*?"<>|]/g,
+            "_"
+        );
+
+
+    if(!filename){
+        filename = "কর্মকর্তা";
+    }
+
+
+    XLSX.writeFile(
+        wb,
+        "ছুটি_হিসাব_"
+        +
+        filename
+        +
+        ".xlsx"
+    );
+
+});
+
+
+/* =====================================================
+   SAVE COMPLETE HTML
+===================================================== */
+
+/*
+   গুরুত্বপূর্ণ:
+
+   এখানে আর পুরো JavaScript-এর ভিতরে
+   restoreScript ঢোকানো হচ্ছে না।
+
+   শুধু JSON data সংরক্ষণ করা হচ্ছে।
+*/
+
+document.getElementById(
+    "saveHtmlBtn"
+).addEventListener(
+"click",
+function(){
+
+    if(
+        !employeeName.value.trim()
+    ){
+
+        alert(
+            "প্রথমে কর্মকর্তা/কর্মচারীর নাম লিখুন।"
+        );
+
+        employeeName.focus();
+
+        return;
+
+    }
+
+
+    if(
+        !designation.value.trim()
+    ){
+
+        alert(
+            "প্রথমে পদবি লিখুন।"
+        );
+
+        designation.focus();
+
+        return;
+
+    }
+
+
+    if(
+        !joiningDate.value
+    ){
+
+        alert(
+            "প্রথমে চাকরিতে ১ম যোগদানের তারিখ নির্বাচন করুন।"
+        );
+
+        joiningDate.focus();
+
+        return;
+
+    }
+
+
+    if(
+        editingIndex >= 0
+    ){
+
+        alert(
+            "বর্তমানে একটি রেকর্ড সংশোধন করা হচ্ছে। "
+            +
+            "আগে 'সংশোধন সংরক্ষণ' অথবা 'সংশোধন বাতিল' করুন।"
+        );
+
+        return;
+
+    }
+
+
+    /*
+       Current data
+    */
+
+    const savedData = {
+
+        version:1,
+
+        employeeName:
+        employeeName.value,
+
+        designation:
+        designation.value,
+
+        joiningDate:
+        joiningDate.value,
+
+        leaveRecords:
+        leaveRecords.map(
+            function(item){
+
+                return {
+
+                    type:item.type,
+
+                    start:item.start,
+
+                    end:item.end,
+
+                    days:item.days
+
+                };
+
+            }
+        )
+
+    };
+
+
+    /*
+       JSON তৈরি
+    */
+
+    const json =
+    JSON.stringify(
+        savedData,
+        null,
+        2
+    );
+
+
+    /*
+       পুরো HTML source নেওয়া হচ্ছে।
+    */
+
+    const source =
+    "<!DOCTYPE html>\n"
+    +
+    document.documentElement.outerHTML;
+
+
+    /*
+       Existing saved data block replace করা হবে।
+
+       ফলে application-এর JavaScript
+       কখনো visible text হয়ে যাবে না।
+    */
+
+    const dataBlock =
+    '<script id="savedApplicationData" '
+    +
+    'type="application/json">\n'
+    +
+    json
+    +
+    '\n<\/script>';
+
+
+    const markerRegex =
+    /<script\s+id=["']savedApplicationData["'][^>]*>[\s\S]*?<\/script>/i;
+
+
+    let newSource;
+
+
+    if(
+        markerRegex.test(source)
+    ){
+
+        newSource =
+        source.replace(
+            markerRegex,
+            dataBlock
+        );
+
+    }
+    else{
+
+        /*
+           নিরাপত্তার জন্য fallback
+        */
+
+        newSource =
+        source.replace(
+            /<\/body>/i,
+            dataBlock
+            +
+            "\n</body>"
+        );
+
+    }
+
+
+    /*
+       Blob তৈরি
+    */
+
+    const blob =
+    new Blob(
+        [newSource],
+        {
+            type:
+            "text/html;charset=utf-8"
+        }
+    );
+
+
+    const url =
+    URL.createObjectURL(blob);
+
+
+    const link =
+    document.createElement("a");
+
+
+    link.href = url;
+
+
+    let filename =
+    employeeName.value
+        .trim()
+        .replace(
+            /[\\/:*?"<>|]/g,
+            "_"
+        );
+
+
+    if(!filename){
+        filename =
+        "কর্মকর্তা";
+    }
+
+
+    link.download =
+    "ছুটি_হিসাব_"
+    +
+    filename
+    +
+    ".html";
+
+
+    document.body.appendChild(
+        link
+    );
+
+
+    link.click();
+
+
+    link.remove();
+
+
+    setTimeout(
+        function(){
+
+            URL.revokeObjectURL(url);
+
+        },
+        1000
+    );
+
+
+    alert(
+        "ইনপুট ও ফলাফলসহ সম্পূর্ণ HTML পেজটি সফলভাবে সেভ হয়েছে।"
+    );
+
+});
+
+
+/* =====================================================
+   PDF
+===================================================== */
+
+document.getElementById(
+    "pdfBtn"
+).addEventListener(
+"click",
+async function(){
+
+    if(
+        typeof html2canvas ===
+        "undefined"
+        ||
+        typeof window.jspdf ===
+        "undefined"
+    ){
+
+        alert(
+            "PDF Library পাওয়া যাচ্ছে না।"
+        );
+
+        return;
+
+    }
+
+
+    if(
+        leaveRecords.length===0
+    ){
+
+        alert(
+            "PDF তৈরি করার জন্য অন্তত একটি ছুটির তথ্য যোগ করুন।"
+        );
+
+        return;
+
+    }
+
+
+    if(
+        editingIndex >= 0
+    ){
+
+        alert(
+            "আগে সংশোধনটি সংরক্ষণ বা বাতিল করুন।"
+        );
+
+        return;
+
+    }
+
+
+    const loading =
+    document.getElementById(
+        "pdfLoading"
+    );
+
+
+    loading.style.display =
+    "flex";
+
+
+    const report =
+    document.getElementById(
+        "pdfReport"
+    );
+
+
+    const wrap =
+    report.querySelector(
+        ".table-wrap"
+    );
+
+
+    const deleteCells =
+    document.querySelectorAll(
+        ".delete-col"
+    );
+
+
+    deleteCells.forEach(
+        function(cell){
+
+            cell.style.display =
+            "none";
+
+        }
+    );
+
+
+    const oldWidth =
+    report.style.width;
+
+    const oldMaxWidth =
+    report.style.maxWidth;
+
+    const oldOverflow =
+    report.style.overflow;
+
+    const oldWrapWidth =
+    wrap.style.width;
+
+    const oldWrapOverflow =
+    wrap.style.overflow;
+
+
+    try{
+
+        report.style.width =
+        "max-content";
+
+        report.style.maxWidth =
+        "none";
+
+        report.style.overflow =
+        "visible";
+
+        wrap.style.width =
+        "max-content";
+
+        wrap.style.overflow =
+        "visible";
+
+
+        await new Promise(
+            function(resolve){
+
+                setTimeout(
+                    resolve,
+                    400
+                );
+
+            }
+        );
+
+
+        const canvas =
+        await html2canvas(
+            report,
+            {
+
+                scale:2,
+
+                useCORS:true,
+
+                backgroundColor:
+                "#ffffff",
+
+                width:
+                report.scrollWidth,
+
+                height:
+                report.scrollHeight,
+
+                windowWidth:
+                report.scrollWidth,
+
+                windowHeight:
+                report.scrollHeight
+
+            }
+        );
+
+
+        const image =
+        canvas.toDataURL(
+            "image/jpeg",
+            .95
+        );
+
+
+        const {
+            jsPDF
+        } =
+        window.jspdf;
+
+
+        const pdf =
+        new jsPDF({
+
+            orientation:
+            "landscape",
+
+            unit:
+            "mm",
+
+            format:
+            "a4",
+
+            compress:
+            true
+
+        });
+
+
+        const pageWidth =
+        pdf.internal.pageSize
+        .getWidth();
+
+
+        const pageHeight =
+        pdf.internal.pageSize
+        .getHeight();
+
+
+        const margin = 7;
+
+
+        const usableWidth =
+        pageWidth -
+        margin * 2;
+
+
+        const usableHeight =
+        pageHeight -
+        margin * 2;
+
+
+        const imageWidth =
+        usableWidth;
+
+
+        const imageHeight =
+        imageWidth *
+        canvas.height /
+        canvas.width;
+
+
+        let heightLeft =
+        imageHeight;
+
+
+        let position =
+        margin;
+
+
+        pdf.addImage(
+
+            image,
+
+            "JPEG",
+
+            margin,
+
+            position,
+
+            imageWidth,
+
+            imageHeight,
+
+            undefined,
+
+            "FAST"
+
+        );
+
+
+        heightLeft -=
+        usableHeight;
+
+
+        while(
+            heightLeft > 0
+        ){
+
+            pdf.addPage();
+
+
+            position =
+            margin -
+            (
+                imageHeight -
+                heightLeft
+            );
+
+
+            pdf.addImage(
+
+                image,
+
+                "JPEG",
+
+                margin,
+
+                position,
+
+                imageWidth,
+
+                imageHeight,
+
+                undefined,
+
+                "FAST"
+
+            );
+
+
+            heightLeft -=
+            usableHeight;
+
+        }
+
+
+        let filename =
+        employeeName.value
+            .trim()
+            .replace(
+                /[\\/:*?"<>|]/g,
+                "_"
+            );
+
+
+        if(!filename){
+            filename =
+            "কর্মকর্তা";
+        }
+
+
+        pdf.save(
+            "ছুটি_হিসাব_"
+            +
+            filename
+            +
+            ".pdf"
+        );
+
+    }
+
+    catch(error){
+
+        console.error(error);
+
+        alert(
+            "PDF তৈরি করতে সমস্যা হয়েছে।"
+        );
+
+    }
+
+    finally{
+
+        report.style.width =
+        oldWidth;
+
+        report.style.maxWidth =
+        oldMaxWidth;
+
+        report.style.overflow =
+        oldOverflow;
+
+        wrap.style.width =
+        oldWrapWidth;
+
+        wrap.style.overflow =
+        oldWrapOverflow;
+
+
+        deleteCells.forEach(
+            function(cell){
+
+                cell.style.display =
+                "";
+
+            }
+        );
+
+
+        loading.style.display =
+        "none";
+
+    }
+
+});
+
+
+/* =====================================================
+   LOAD SAVED DATA
+===================================================== */
+
+/*
+   যদি এটি Save করা HTML হয়,
+   তাহলে savedApplicationData থেকে
+   তথ্য পুনরুদ্ধার হবে।
+
+   নতুন/খালি HTML হলে {}
+   থাকবে এবং কিছুই load হবে না।
+*/
+
+function loadSavedData(){
+
+    const dataElement =
+    document.getElementById(
+        "savedApplicationData"
+    );
+
+
+    if(!dataElement){
+        return;
+    }
+
+
+    const raw =
+    dataElement.textContent.trim();
+
+
+    if(!raw || raw === "{}"){
+        return;
+    }
+
+
+    try{
+
+        const data =
+        JSON.parse(raw);
+
+
+        if(
+            data.employeeName !== undefined
+        ){
+
+            employeeName.value =
+            data.employeeName || "";
+
+        }
+
+
+        if(
+            data.designation !== undefined
+        ){
+
+            designation.value =
+            data.designation || "";
+
+        }
+
+
+        if(
+            data.joiningDate !== undefined
+        ){
+
+            joiningDate.value =
+            data.joiningDate || "";
+
+        }
+
+
+        if(
+            Array.isArray(
+                data.leaveRecords
+            )
+        ){
+
+            leaveRecords =
+            data.leaveRecords.map(
+                function(item){
+
+                    return {
+
+                        type:
+                        item.type,
+
+                        start:
+                        item.start,
+
+                        end:
+                        item.end,
+
+                        days:
+                        Number(
+                            item.days
+                        )
+
+                    };
+
+                }
+            );
+
+        }
+
+    }
+
+    catch(error){
+
+        console.error(
+            "Saved data load error:",
+            error
+        );
+
+    }
+
+}
+
+
+/* =====================================================
+   INITIALIZE
+===================================================== */
+
+loadSavedData();
+
+updateEmployeeInfo();
+
+buildLedger();
+
+</script>
+
+</body>
+</html>
